@@ -11,10 +11,10 @@ st.set_page_config(page_title="AI Diwali Wish Maker", page_icon="🪔", layout="
 # Configuration - Load from environment variables or Streamlit secrets
 def get_config(key, default):
     """Get config from env var or Streamlit secrets"""
-    value = os.getenv(key, default)
-    if value == default and hasattr(st, 'secrets') and key in st.secrets:
-        value = st.secrets[key]
-    return value
+    return os.getenv(key, default)
+    # if value == default and hasattr(st, 'secrets') and key in st.secrets:
+    #     value = st.secrets[key]
+    # return value
 
 OLLAMA_HOST = get_config("OLLAMA_HOST", "http://localhost:11434")
 OLLAMA_MODEL = get_config("OLLAMA_MODEL", "llama3.2")
