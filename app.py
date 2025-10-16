@@ -472,7 +472,7 @@ Output only the text, ready for display."""
         debug_log(f"Attempting Ollama connection to: {OLLAMA_HOST}")
         debug_log(f"Using model: {OLLAMA_MODEL}")
         response = requests.post(f"{OLLAMA_HOST}/api/generate",
-            json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False}, timeout=30)
+            json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False}, timeout=120)
         debug_log(f"Ollama response status: {response.status_code}")
         if response.status_code == 200:
             debug_log("✓ Ollama success!")
