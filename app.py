@@ -1,7 +1,12 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import os, time, requests, re, json
+import os, time, requests, re, json, sys
 from urllib.parse import quote
+
+# Debug logging function that works with systemd
+def debug_log(message):
+    """Print to stderr so it appears in journalctl"""
+    print(f"[DEBUG] {message}", file=sys.stderr, flush=True)
 
 st.set_page_config(
     page_title="AI Diwali Wish Maker", 
@@ -464,16 +469,16 @@ Output only the text, ready for display."""
     # Try Ollama first
     ollama_error = None
     try:
-        print(f"[DEBUG] Attempting Ollama connection to: {OLLAMA_HOST}")
-        print(f"[DEBUG] Using model: {OLLAMA_MODEL}")
+        debug_log(f"Attempting Ollama connection to: {OLLAMA_HOST}")
+        debug_log(f"Using model: {OLLAMA_MODEL}")
         response = requests.post(f"{OLLAMA_HOST}/api/generate",
             json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False}, timeout=30)
-        print(f"[DEBUG] Ollama response status: {response.status_code}")
+        debug_log(f"Ollama response status: {response.status_code}")
         if response.status_code == 200:
-            print("[DEBUG] ✓ Ollama success!")
+            debug_log("✓ Ollama success!")
             return response.json()["response"].strip()
         else:
-            ollama_error = f"Status code: {response.status_code}, Response: {response.text}"
+            ollama_error = f"Status code: {response.status_code}, Response: {response.text[:200]}"
     except requests.exceptions.Timeout as e:
         ollama_error = f"Timeout error: {str(e)}"
     except requests.exceptions.ConnectionError as e:
@@ -482,8 +487,8 @@ Output only the text, ready for display."""
         ollama_error = f"Unexpected error: {type(e).__name__} - {str(e)}"
     
     if ollama_error:
-        print(f"[DEBUG] ✗ Ollama failed: {ollama_error}")
-        st.warning(f"⚠️ Ollama unavailable ({ollama_error}), using fallback...")
+        debug_log(f"✗ Ollama failed: {ollama_error}")
+        st.warning(f"⚠️ Ollama unavailable, using fallback...")
     
     # Try OpenAI if Ollama fails
     if OPENAI_API_KEY:
