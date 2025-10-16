@@ -462,13 +462,28 @@ Requirements:
 Output only the text, ready for display."""
     
     # Try Ollama first
+    ollama_error = None
     try:
+        print(f"[DEBUG] Attempting Ollama connection to: {OLLAMA_HOST}")
+        print(f"[DEBUG] Using model: {OLLAMA_MODEL}")
         response = requests.post(f"{OLLAMA_HOST}/api/generate",
             json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False}, timeout=30)
+        print(f"[DEBUG] Ollama response status: {response.status_code}")
         if response.status_code == 200:
+            print("[DEBUG] ✓ Ollama success!")
             return response.json()["response"].strip()
+        else:
+            ollama_error = f"Status code: {response.status_code}, Response: {response.text}"
+    except requests.exceptions.Timeout as e:
+        ollama_error = f"Timeout error: {str(e)}"
+    except requests.exceptions.ConnectionError as e:
+        ollama_error = f"Connection error: {str(e)}"
     except Exception as e:
-        pass  # Silently try fallback
+        ollama_error = f"Unexpected error: {type(e).__name__} - {str(e)}"
+    
+    if ollama_error:
+        print(f"[DEBUG] ✗ Ollama failed: {ollama_error}")
+        st.warning(f"⚠️ Ollama unavailable ({ollama_error}), using fallback...")
     
     # Try OpenAI if Ollama fails
     if OPENAI_API_KEY:
