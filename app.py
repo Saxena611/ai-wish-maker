@@ -34,6 +34,33 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Google Analytics Integration
+def inject_ga():
+    """Inject Google Analytics tracking code"""
+    ga_code = """
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0QSZXW3BKD"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-0QSZXW3BKD');
+      
+      // Custom event tracking function
+      window.trackWishGeneration = function(relationship, language) {
+        gtag('event', 'generate_wish', {
+          'event_category': 'Wish',
+          'event_label': relationship,
+          'language': language
+        });
+      };
+    </script>
+    """
+    components.html(ga_code, height=0)
+
+# Inject GA on page load
+inject_ga()
+
 # Configuration - Load from environment variables
 def get_config(key, default):
     """Get config from env var or Streamlit secrets"""
@@ -827,6 +854,16 @@ def main():
                     wish_text = generate_wish_with_ai(sender, recipient, rel, traits_list, life, lang)
                     st.session_state.wish_text = wish_text
                     st.session_state.wish_generated = True
+                    
+                    # Track wish generation in Google Analytics
+                    components.html(f"""
+                    <script>
+                        if (typeof window.parent.trackWishGeneration === 'function') {{
+                            window.parent.trackWishGeneration('{rel}', '{lang}');
+                        }}
+                    </script>
+                    """, height=0)
+                    
                     st.rerun()
         
         st.markdown('</div>', unsafe_allow_html=True)
