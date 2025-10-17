@@ -1,12 +1,31 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import os, time, requests, re, json, sys
+import os, time, requests, re, json, sys, random
 from urllib.parse import quote
 
 # Debug logging function that works with systemd
 def debug_log(message):
     """Print to stderr so it appears in journalctl"""
     print(f"[DEBUG] {message}", file=sys.stderr, flush=True)
+
+# Promotional taglines for wishkarle.online
+PROMO_TAGLINES = [
+    "🪔 Dil se likha, AI ne roshan kar diya ✨",
+    "🎆 Mere emotions, AI ka expression 💫",
+    "✨ Khayaal mera, andaaz AI ka 😄",
+    "💫 Thoda pyaar mera, thoda magic AI ka 🪔",
+    "🌟 Main socha, AI ne likh diya 😉",
+    "🎇 Mera jazbaat, AI ka likha hua andaaz ✨",
+    "🪔 Dil se socha, AI ne diya roop 💛",
+    "🌈 Pyar mera, presentation AI ka 🎁",
+    "💥 Emotion mera, expression AI ka ✨",
+    "🎊 Feeling human wali, likhawat AI wali 😄",
+    "🪔 Soch meri, likhavat AI ki 💫",
+    "🌸 Dil ke jazbaat, AI ke alfaaz 🪔",
+    "✨ Mujhse likha gaya, AI se nikha gaya 🎇",
+    "💫 Mere shabd, AI ka touch ✨",
+    "🎆 Mann se bana, AI se sajaa diya 🪔"
+]
 
 st.set_page_config(
     page_title="AI Diwali Wish Maker", 
@@ -258,7 +277,8 @@ st.markdown("""
         word-wrap: break-word !important;
         word-break: break-word !important;
         white-space: pre-line !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
     }
@@ -410,7 +430,8 @@ st.markdown("""
             word-wrap: break-word !important;
             word-break: break-word !important;
             white-space: pre-line !important;
-            overflow: hidden !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
         }
         
         /* Hide some decorations on very small screens */
@@ -442,6 +463,11 @@ st.markdown("""
 </style>
 
 """, unsafe_allow_html=True)
+
+def add_promo_tagline(wish_text):
+    """Add a random promotional tagline to the wish"""
+    tagline = random.choice(PROMO_TAGLINES)
+    return f"{wish_text}\n\n{tagline}\n(wishkarle.online)"
 
 def generate_wish_with_ai(sender_name, recipient_name, relationship, traits, life_thing, language):
     """Generate wish text using Ollama or OpenAI"""
@@ -476,7 +502,8 @@ Output only the text, ready for display."""
         debug_log(f"Ollama response status: {response.status_code}")
         if response.status_code == 200:
             debug_log("✓ Ollama success!")
-            return response.json()["response"].strip()
+            wish = response.json()["response"].strip()
+            return add_promo_tagline(wish)
         else:
             ollama_error = f"Status code: {response.status_code}, Response: {response.text[:200]}"
     except requests.exceptions.Timeout as e:
@@ -500,12 +527,13 @@ Output only the text, ready for display."""
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=200
             )
-            return response.choices[0].message.content.strip()
+            wish = response.choices[0].message.content.strip()
+            return add_promo_tagline(wish)
         except Exception as e:
             pass  # Silently use fallback
     
     # Final fallback
-    return f"""Dear {recipient_name} 🪔✨
+    fallback_wish = f"""Dear {recipient_name} 🪔✨
 
 This Diwali, may your life be filled with endless joy, prosperity, and beautiful moments! 🌟🎆 
 Your {traits_str} spirit lights up every room, just like these diyas! 🕯️💫
@@ -513,6 +541,7 @@ May your passion for {life_thing} grow brighter than ever! 🌈🎉
 
 Happy Diwali! 🪔✨
 With love, {sender_name} ❤️"""
+    return add_promo_tagline(fallback_wish)
 
 def show_progress_bar(current_step, total_steps):
     """Show a minimal progress bar"""
@@ -917,9 +946,26 @@ def main():
                 st.session_state.wish_generated = False
                 st.rerun()
     
-    # Minimal footer
+    # Beautiful footer with LinkedIn
     st.markdown("")
-    st.markdown('<p style="text-align: center; color: #CCC; font-size: 11px; margin-top: 40px;">Made with ❤️ for Diwali 2025</p>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="text-align: center; margin-top: 50px; padding: 20px;">
+        <p style="color: #999; font-size: 12px; margin-bottom: 8px;">Made with ❤️ for Diwali 2025 🪔 • by Animesh</p>
+        <a href="https://www.linkedin.com/in/animeshsaxena6111/" target="_blank" 
+           style="display: inline-flex; align-items: center; gap: 8px; 
+                  text-decoration: none; color: #0077B5; font-size: 13px;
+                  padding: 8px 16px; border-radius: 20px; 
+                  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                  border: 1px solid #0077B5; transition: all 0.3s ease;
+                  font-weight: 500;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#0077B5">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+            Connect on LinkedIn
+        </a>
+        <p style="color: #BBB; font-size: 10px; margin-top: 15px;">✨ Powered by AI • Built with Streamlit & Ollama</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
