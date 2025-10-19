@@ -500,24 +500,37 @@ def generate_wish_with_ai(sender_name, recipient_name, relationship, traits, lif
     """Generate wish text using Ollama or OpenAI"""
     traits_str = ", ".join(traits) if traits else "wonderful"
     
-    prompt = f"""You are a creative AI Diwali greeting writer. Generate a short, warm, personal Diwali wish with lots of emojis.
+    # Language-specific strict instructions (anti-hallucination)
+    lang_instruction = {
+        "English": "MUST write in ENGLISH only.",
+        "Hindi": "MUST write in pure HINDI (हिंदी) Devanagari script. NOT Punjabi. NOT Urdu. Use: दिवाली, शुभकामनाएं, खुशियाँ, प्रकाश, जीवन.",
+        "Hinglish": "MUST write in HINGLISH (Hindi+English mixed). Example: 'Aapko Diwali ki shubhkamnayein' NOT pure Hindi/English."
+    }
+    
+    prompt = f"""Write a Diwali wish in {language}.
 
-Sender Name: {sender_name}
-Recipient Name: {recipient_name}
-Relationship: {relationship}
-Personality Traits: {traits_str}
-Recipient Life Thing: {life_thing}
-Language: {language}
+LANGUAGE RULE: {lang_instruction.get(language, lang_instruction['English'])}
 
-Requirements:
-* Include many relevant emojis (at least 5-8 emojis total)
-* Indent sentences nicely for easy reading
-* Tone should be festive, warm, and personal
-* Keep it 2-4 lines
-* Make it conversational and heartfelt
-* Start with a warm greeting to {recipient_name}
+GIVEN INFORMATION (USE ONLY THIS):
+- From: {sender_name}
+- To: {recipient_name}
+- Relationship: {relationship}
+- Their traits: {traits_str}
+- Their passion: {life_thing}
 
-Output only the text, ready for display."""
+STRICT RULES:
+1. Use ONLY the information provided above
+2. Write in {language} language only
+3. Length: 2-4 sentences maximum
+4. Include 6-8 Diwali emojis (🪔✨🎆💫🌟🎇)
+5. Address {recipient_name} by name
+6. Mention their {traits_str} traits
+7. Reference their {life_thing} passion
+8. End with wishes from {sender_name}
+
+FORMAT: Short greeting + personal line + wish + signature
+
+DO NOT invent facts. DO NOT add information not provided. Output ONLY the wish text."""
     
     # Try Ollama first
     ollama_error = None
