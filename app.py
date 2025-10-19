@@ -783,7 +783,7 @@ def main():
     if st.session_state.current_step >= 4 and not st.session_state.wish_generated:
         st.markdown('<div class="input-container" id="step-4">', unsafe_allow_html=True)
         life_thing = st.text_input(
-            "🎨 Their Passion",
+            "🎨 Their Passion or life thing..",
             placeholder="e.g., Music, Travel, Cooking",
             key="life_thing",
             on_change=advance_step_4
